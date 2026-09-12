@@ -2,6 +2,54 @@
 
 Simulador visual de trajetórias de projéteis **sem resistência do ar**, com backend TypeScript (REST) e frontend React.
 
+## Como rodar
+
+### Opção recomendada: Docker (mais simples, sem instalar nada além do Docker)
+
+```bash
+cd ado_I
+docker build -t ado-i .
+docker run -p 3001:3001 ado-i
+```
+
+Abra `http://localhost:3001` — API e interface sobem juntas, na mesma porta,
+dentro de um único container.
+
+Se alterar o código e quiser rodar a versão nova, é preciso reconstruir a
+imagem antes:
+
+```bash
+docker rm -f ado-i-run 2>/dev/null   # se já tiver um container com esse nome
+docker build -t ado-i .
+docker run -d --name ado-i-run -p 3001:3001 ado-i
+```
+
+### Alternativa: rodar localmente com Node.js
+
+Pré-requisito: Node.js 20+.
+
+```bash
+cd ado_I
+npm install
+npm run build -w shared
+npm run dev
+```
+
+Isso sobe:
+
+- Backend: http://localhost:3001
+- Frontend: http://localhost:5173
+
+Scripts úteis:
+
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Backend + frontend juntos |
+| `npm run dev:backend` | Só API |
+| `npm run dev:frontend` | Só UI (proxy `/api` → `:3001`) |
+| `npm test` | Testes unitários das fórmulas |
+| `npm run build` | Build de shared, backend e frontend |
+
 ## Arquitetura
 
 ```
@@ -31,32 +79,6 @@ x(t) = v_{0x}\,t,\quad y(t) = y_0 + v_{0y}\,t - \tfrac{1}{2}gt^2
 - **Altura máxima**: \(y_{\max} = y_0 + \dfrac{v_{0y}^2}{2g}\) (se \(v_{0y} > 0\); senão \(y_0\))
 - **Alcance**: \(R = v_{0x}\,T\)
 - **Trajetória**: amostragem de \(t \in [0, T]\)
-
-## Como rodar
-
-Pré-requisito: Node.js 20+.
-
-```bash
-cd ado_I
-npm install
-npm run build -w shared
-npm run dev
-```
-
-Isso sobe:
-
-- Backend: http://localhost:3001  
-- Frontend: http://localhost:5173  
-
-Scripts úteis:
-
-| Comando | Descrição |
-|---------|-----------|
-| `npm run dev` | Backend + frontend juntos |
-| `npm run dev:backend` | Só API |
-| `npm run dev:frontend` | Só UI (proxy `/api` → `:3001`) |
-| `npm test` | Testes unitários das fórmulas |
-| `npm run build` | Build de shared, backend e frontend |
 
 ## API
 
@@ -128,31 +150,3 @@ curl -s http://localhost:3001/api/trajectory \
   (céu, chão, cores dos painéis) — a Lua tem céu escuro com estrelas, por exemplo
 - Botão **Animar lançamento**: projétil percorre a trajetória calculada, com um
   efeito sonoro de lançamento sintetizado via Web Audio API (sem arquivo de áudio)
-
-## Docker
-
-Existe um `dockerfile` na raiz de `ado_I/` que builda os três workspaces
-(`shared`, `backend`, `frontend`) e sobe **um único container** servindo a API
-e a interface (o Express do backend também serve os arquivos estáticos do
-build do frontend).
-
-```bash
-cd ado_I
-docker build -t ado-i .
-docker run -p 3001:3001 ado-i
-```
-
-Depois é só abrir `http://localhost:3001` — API e UI na mesma porta.
-
-Sempre que houver mudança em `backend/`, `frontend/` ou `shared/`, é preciso
-**reconstruir a imagem** antes de rodar de novo:
-
-```bash
-docker rm -f ado-i-run 2>/dev/null   # se já tiver um container rodando com esse nome
-docker build -t ado-i .
-docker run -d --name ado-i-run -p 3001:3001 ado-i
-```
-
-(`docker build` não faz cache incremental "inteligente" entre commits — ele
-reconstrói a partir da camada que mudou, então builds subsequentes tendem a
-ser rápidos.)
