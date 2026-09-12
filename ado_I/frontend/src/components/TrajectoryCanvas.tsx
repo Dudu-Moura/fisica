@@ -135,10 +135,19 @@ function drawScene(
   ctx.fillStyle = theme.groundEdge;
   ctx.fillRect(0, groundY, w, 3);
 
+  // Para lançamentos muito íngremes ou muito rasteiros, a escala única acima
+  // pode deixar um dos eixos com poucos pixels de largura/altura. Em vez de
+  // desenhar sempre 5/4 rótulos fixos (que se sobrepõem e viram ilegíveis
+  // nesse caso), calculamos quantos cabem sem colidir, com um mínimo de 1.
+  const ESTIMATED_X_LABEL_PX = 34;
+  const ESTIMATED_Y_LABEL_PX = 16;
+  const xTicks = Math.max(1, Math.min(5, Math.floor(usedW / ESTIMATED_X_LABEL_PX)));
+  const yTicks = Math.max(1, Math.min(4, Math.floor(usedH / ESTIMATED_Y_LABEL_PX)));
+  const xLabelsFit = usedW / (xTicks + 1) >= ESTIMATED_X_LABEL_PX;
+  const yLabelsFit = usedH / (yTicks + 1) >= ESTIMATED_Y_LABEL_PX;
+
   ctx.strokeStyle = "rgba(30, 50, 40, 0.12)";
   ctx.lineWidth = 1;
-  const xTicks = 5;
-  const yTicks = 4;
   for (let i = 0; i <= xTicks; i++) {
     const x = (worldW * i) / xTicks;
     const { sx } = toScreen(x, 0);
@@ -167,16 +176,26 @@ function drawScene(
   ctx.fillStyle = "#1e3228";
   ctx.font = "12px DM Sans, sans-serif";
   ctx.textAlign = "center";
-  for (let i = 0; i <= xTicks; i++) {
-    const x = (worldW * i) / xTicks;
-    const { sx } = toScreen(x, 0);
-    ctx.fillText(`${x.toFixed(0)} m`, sx, groundY + 18);
+  if (xLabelsFit) {
+    for (let i = 0; i <= xTicks; i++) {
+      const x = (worldW * i) / xTicks;
+      const { sx } = toScreen(x, 0);
+      ctx.fillText(`${x.toFixed(0)} m`, sx, groundY + 18);
+    }
+  } else {
+    // Nem "0 m" e o valor máximo cabem lado a lado sem se sobrepor
+    // (lançamento quase vertical) — mostra só o alcance total.
+    ctx.fillText(`0–${maxX.toFixed(0)} m`, PAD.left + usedW / 2, groundY + 18);
   }
   ctx.textAlign = "right";
-  for (let i = 0; i <= yTicks; i++) {
-    const y = (worldH * i) / yTicks;
-    const { sy } = toScreen(0, y);
-    ctx.fillText(`${y.toFixed(0)}`, PAD.left - 8, sy + 4);
+  if (yLabelsFit) {
+    for (let i = 0; i <= yTicks; i++) {
+      const y = (worldH * i) / yTicks;
+      const { sy } = toScreen(0, y);
+      ctx.fillText(`${y.toFixed(0)}`, PAD.left - 8, sy + 4);
+    }
+  } else {
+    ctx.fillText(`0–${maxY.toFixed(0)}`, PAD.left - 8, PAD.top + usedH / 2);
   }
   ctx.save();
   ctx.translate(16, PAD.top + usedH / 2);
