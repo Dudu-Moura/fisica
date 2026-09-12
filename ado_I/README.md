@@ -65,20 +65,20 @@ ado_I/
 
 ## Fórmulas (sem resistência do ar)
 
-Com velocidade inicial \(v_0\), ângulo \(\theta\), altura inicial \(y_0\) e gravidade \(g\):
+Com velocidade inicial $v_0$, ângulo $\theta$, altura inicial $y_0$ e gravidade $g$:
 
-\[
+$$
 v_{0x} = v_0\cos\theta,\quad v_{0y} = v_0\sin\theta
-\]
+$$
 
-\[
-x(t) = v_{0x}\,t,\quad y(t) = y_0 + v_{0y}\,t - \tfrac{1}{2}gt^2
-\]
+$$
+x(t) = v_{0x}\,t,\quad y(t) = y_0 + v_{0y}\,t - \frac{1}{2}gt^2
+$$
 
-- **Tempo de voo** \(T\): raiz positiva de \(y(t) = 0\)
-- **Altura máxima**: \(y_{\max} = y_0 + \dfrac{v_{0y}^2}{2g}\) (se \(v_{0y} > 0\); senão \(y_0\))
-- **Alcance**: \(R = v_{0x}\,T\)
-- **Trajetória**: amostragem de \(t \in [0, T]\)
+- **Tempo de voo** $T$: raiz positiva de $y(t) = 0$
+- **Altura máxima**: $y_{\max} = y_0 + \frac{v_{0y}^2}{2g}$ (se $v_{0y} > 0$; senão $y_0$)
+- **Alcance**: $R = v_{0x}\,T$
+- **Trajetória**: amostragem de $t \in [0, T]$
 
 ## API
 
