@@ -6,6 +6,19 @@ Simulador visual de trajetórias de projéteis **sem resistência do ar**, com b
 
 ### Opção recomendada: Docker (mais simples, sem instalar nada além do Docker)
 
+Se ainda não tiver o Docker instalado:
+
+- **Windows / Mac**: instale o [Docker Desktop](https://www.docker.com/products/docker-desktop/) e abra o app (ele precisa estar rodando em segundo plano).
+- **Linux**: siga as [instruções oficiais](https://docs.docker.com/engine/install/) para a sua distribuição (ex.: `sudo apt install docker.io` no Ubuntu/Debian, ou o script de conveniência `curl -fsSL https://get.docker.com | sh`).
+
+Confirme que instalou certo:
+
+```bash
+docker --version
+```
+
+Com o Docker instalado e rodando:
+
 ```bash
 cd ado_I
 docker build -t ado-i .
