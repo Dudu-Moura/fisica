@@ -1,0 +1,111 @@
+<section class="system">
+  <aside class="panel controls">
+    <h2>Parâmetros</h2>
+
+    <div class="segmented" role="radiogroup" aria-label="Modo">
+      <button type="button" role="radio" [attr.aria-checked]="mode() === 'string'" [class.active]="mode() === 'string'" (click)="setMode('string')">
+        Objeto no fio
+      </button>
+      <button type="button" role="radio" [attr.aria-checked]="mode() === 'car'" [class.active]="mode() === 'car'" (click)="setMode('car')">
+        Carro na curva
+      </button>
+    </div>
+
+    <label class="field">
+      <span>Situação real</span>
+      <select [value]="presetId()" (change)="onPresetChange($event)">
+        @for (p of presets(); track p.id) {
+          <option [value]="p.id">{{ p.icon }} {{ p.name }}</option>
+        }
+        <option value="custom">✎ Personalizado</option>
+      </select>
+    </label>
+    @if (preset(); as p) {
+      <p class="hint">{{ p.description }}</p>
+    }
+
+    @if (mode() === 'string') {
+      <app-param-slider label="Massa m" unit="kg" [min]="0.05" [max]="10" [log]="true" [(value)]="mass" (valueChange)="touch()" />
+      <app-param-slider label="Raio R (fio)" unit="m" [min]="0.1" [max]="5" [step]="0.05" [(value)]="radius" (valueChange)="touch()" />
+      <app-param-slider label="Velocidade tangencial v" unit="m/s" [min]="0.5" [max]="40" [step]="0.1" [digits]="1" [(value)]="speed" (valueChange)="touch()" />
+    } @else {
+      <app-param-slider label="Massa do veículo m" unit="kg" [min]="100" [max]="40000" [log]="true" [(value)]="mass" (valueChange)="touch()" />
+      <app-param-slider label="Raio da curva R" unit="m" [min]="5" [max]="200" [step]="1" [digits]="0" [(value)]="radius" (valueChange)="touch()" />
+      <app-param-slider label="Velocidade v" unit="m/s" [min]="1" [max]="60" [step]="0.5" [digits]="1" [(value)]="speed" (valueChange)="touch()" />
+      <p class="hint">≈ {{ fmt(speed() * 3.6, 0) }} km/h</p>
+
+      <label class="field">
+        <span>Pista</span>
+        <select (change)="onSurfaceChange($event)">
+          @for (s of surfaces; track s.key) {
+            <option [value]="s.key" [selected]="s.key === surface()">{{ s.name }} (μₛ ≈ {{ fmt(s.muS) }})</option>
+          }
+        </select>
+      </label>
+      <app-param-slider label="Atrito estático pneu-pista μₛ" [min]="0.05" [max]="1.2" [step]="0.01" [(value)]="muS" />
+    }
+  </aside>
+
+  <div class="main">
+    @if (sim.error(); as err) {
+      <div class="alert" role="alert">⚠ {{ err }}</div>
+    }
+
+    <div class="card scene-card">
+      <div class="card-head">
+        <h3>{{ mode() === 'car' ? 'Carro numa curva plana (vista de cima)' : 'Movimento circular uniforme (vista de cima)' }}</h3>
+        @if (mode() === 'car' && result(); as r) {
+          <span class="badge" [class.badge-ok]="!r.skidding" [class.badge-bad]="r.skidding">
+            {{ r.skidding ? '✕ Derrapa' : '✓ Faz a curva' }}
+          </span>
+        }
+      </div>
+      <app-centripetal-scene [result]="result()" [mode]="mode()" [radius]="radius()" [speed]="speed()" [icon]="icon()"
+        [backdrop]="sceneId()" [vehicle]="vehicleId()" [surface]="surface()" />
+      <app-playback-controls />
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <span class="metric-label">Força centrípeta Fc = mv²/R</span>
+        <span class="metric-value">{{ fmt(result()?.centripetalForce) }} <small>N</small></span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Velocidade angular ω = v/R</span>
+        <span class="metric-value">{{ fmt(result()?.angularVelocity, 3) }} <small>rad/s</small></span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Período T = 2π/ω</span>
+        <span class="metric-value">{{ fmt(result()?.period, 3) }} <small>s</small></span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Aceleração centrípeta v²/R</span>
+        <span class="metric-value">{{ fmt(result()?.centripetalAcceleration) }} <small>m/s²</small></span>
+        <span class="metric-sub">≈ {{ fmt((result()?.centripetalAcceleration ?? 0) / 9.81, 1) }} g</span>
+      </div>
+      @if (mode() === 'car') {
+        <div class="metric">
+          <span class="metric-label">Velocidade máxima √(μgR)</span>
+          <span class="metric-value">{{ fmt(result()?.maxSpeed, 1) }} <small>m/s</small></span>
+          <span class="metric-sub">≈ {{ fmt((result()?.maxSpeed ?? 0) * 3.6, 0) }} km/h</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Atrito máximo μmg</span>
+          <span class="metric-value">{{ fmt(result()?.maxFriction, 0) }} <small>N</small></span>
+        </div>
+      }
+      <div class="metric live">
+        <span class="metric-label">Agora (t = {{ fmt(live()?.t) }} s)</span>
+        <span class="metric-value">x = {{ fmt(live()?.x) }} <small>m</small></span>
+        <span class="metric-sub">y = {{ fmt(live()?.y) }} m</span>
+      </div>
+    </div>
+
+    <div class="charts one">
+      <div class="card">
+        <h3>Coordenadas ao longo de uma volta</h3>
+        <app-line-chart title="x(t) e y(t) no MCU" [series]="trajectorySeries()" yLabel="posição (m)" />
+      </div>
+    </div>
+  </div>
+</section>

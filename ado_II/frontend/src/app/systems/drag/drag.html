@@ -1,0 +1,105 @@
+<section class="system">
+  <aside class="panel controls">
+    <h2>Parâmetros</h2>
+
+    <div class="segmented" role="radiogroup" aria-label="Modelo de arrasto">
+      <button type="button" role="radio" [attr.aria-checked]="model() === 'linear'" [class.active]="model() === 'linear'" (click)="setModel('linear')">
+        Linear −bv
+      </button>
+      <button type="button" role="radio" [attr.aria-checked]="model() === 'quadratic'" [class.active]="model() === 'quadratic'" (click)="setModel('quadratic')">
+        Quadrático −cv|v|
+      </button>
+    </div>
+
+    <label class="field">
+      <span>Objeto</span>
+      <select [value]="presetId()" (change)="onPresetChange($event)">
+        @for (p of presets; track p.id) {
+          <option [value]="p.id">{{ p.icon }} {{ p.name }}</option>
+        }
+        <option value="custom">✎ Personalizado</option>
+      </select>
+    </label>
+    @if (preset(); as p) {
+      <p class="hint">{{ p.description }}</p>
+    }
+
+    <app-param-slider label="Massa m" unit="kg" [min]="0.00001" [max]="200" [log]="true" [(value)]="mass" (valueChange)="touch()" />
+    <app-param-slider
+      [label]="model() === 'linear' ? 'Coeficiente b' : 'Coeficiente c'"
+      [unit]="coefUnit()"
+      [min]="0.000001"
+      [max]="500"
+      [log]="true"
+     
+      [(value)]="coefficient"
+      (valueChange)="touch()"
+    />
+
+    <label class="check">
+      <input type="checkbox" [checked]="compare()" (change)="compare.set(!compare())" />
+      Sobrepor modelo {{ modelLabel[otherModel()] }} (mesmo m e coeficiente)
+    </label>
+    <p class="hint">
+      O arrasto quadrático (F ∝ v²) é o mais realista para objetos no ar; o linear vale para objetos pequenos e lentos.
+    </p>
+  </aside>
+
+  <div class="main">
+    @if (sim.error(); as err) {
+      <div class="alert" role="alert">⚠ {{ err }}</div>
+    }
+
+    <div class="card scene-card">
+      <div class="card-head">
+        <h3>Queda a partir do repouso</h3>
+      </div>
+      <app-drag-scene [result]="result()" [icon]="icon()" [backdrop]="sceneId()" />
+      <app-playback-controls />
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <span class="metric-label">
+          Velocidade terminal {{ model() === 'linear' ? 'mg/b' : '√(mg/c)' }}
+        </span>
+        <span class="metric-value">{{ fmt(result()?.terminalVelocity) }} <small>m/s</small></span>
+        <span class="metric-sub">≈ {{ fmt((result()?.terminalVelocity ?? 0) * 3.6, 0) }} km/h</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Tempo até 95% de vₜ</span>
+        <span class="metric-value">{{ fmt(result()?.timeTo95) }} <small>s</small></span>
+        <span class="metric-sub">
+          {{ modelLabel[otherModel()] }}: {{ fmt(otherSim.result()?.timeTo95) }} s
+        </span>
+      </div>
+      @if (model() === 'linear') {
+        <div class="metric">
+          <span class="metric-label">Constante de tempo τ = m/b</span>
+          <span class="metric-value">{{ fmt(result()?.timeConstant, 3) }} <small>s</small></span>
+        </div>
+      }
+      <div class="metric live">
+        <span class="metric-label">Agora (t = {{ fmt(live()?.t) }} s)</span>
+        <span class="metric-value">v = {{ fmt(live()?.v) }} <small>m/s</small></span>
+        <span class="metric-sub">queda livre: {{ fmt(live()?.vFree) }} m/s · Δ = {{ fmt((live()?.vFree ?? 0) - (live()?.v ?? 0)) }} m/s</span>
+      </div>
+      <div class="metric live">
+        <span class="metric-label">Distância percorrida</span>
+        <span class="metric-value">{{ fmt(live()?.y, 1) }} <small>m</small></span>
+        <span class="metric-sub">queda livre: {{ fmt(live()?.yFree, 1) }} m</span>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="card">
+        <h3>Velocidade v(t)</h3>
+        <app-line-chart title="Velocidade com e sem arrasto" [series]="velocitySeries()" yLabel="v (m/s)" />
+      </div>
+      <div class="card">
+        <h3>Distância percorrida y(t)</h3>
+        <app-line-chart title="Distância com e sem arrasto" [series]="positionSeries()" yLabel="y (m)" />
+      </div>
+    </div>
+  </div>
+</section>

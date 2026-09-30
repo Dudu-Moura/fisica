@@ -1,0 +1,91 @@
+<section class="system">
+  <aside class="panel controls">
+    <h2>Parâmetros</h2>
+    <app-param-slider label="Massa do bloco m₁" unit="kg" [min]="0.1" [max]="20" [step]="0.1" [digits]="1" [(value)]="m1" />
+    <app-param-slider label="Massa pendurada m₂" unit="kg" [min]="0.1" [max]="20" [step]="0.1" [digits]="1" [(value)]="m2" />
+    <app-param-slider label="Ângulo θ" unit="°" [min]="0" [max]="80" [step]="1" [digits]="0" [(value)]="angleDeg" />
+    <app-param-slider label="Atrito cinético μₖ" [min]="0" [max]="1" [step]="0.01" [(value)]="muK" />
+
+    <label class="check">
+      <input type="checkbox" [checked]="sameMu()" (change)="sameMu.set(!sameMu())" />
+      Usar μₛ = μₖ
+    </label>
+    <app-param-slider
+      label="Atrito estático μₛ"
+      [min]="0"
+      [max]="1"
+      [step]="0.01"
+      [disabled]="sameMu()"
+      [value]="sameMu() ? muK() : muS()"
+      (valueChange)="muS.set($event)"
+    />
+
+    <p class="hint">
+      Convenção: positivo = m₁ sobe o plano. Para achar o μ crítico, diminua μₖ até o estado mudar para
+      “em movimento”.
+    </p>
+  </aside>
+
+  <div class="main">
+    @if (sim.error(); as err) {
+      <div class="alert" role="alert">⚠ {{ err }}</div>
+    }
+
+    <div class="card scene-card">
+      <div class="card-head">
+        <h3>Bloco no plano inclinado + massa pendurada</h3>
+        @if (result(); as r) {
+          <span class="badge" [class.badge-ok]="r.state === 'moving'" [class.badge-warn]="r.state === 'static'">
+            {{ r.state === 'moving' ? '▶ Em movimento' : '■ Equilíbrio estático' }}
+          </span>
+        }
+      </div>
+      <app-inclined-plane-scene [result]="result()" [angleDeg]="angleDeg()" [m1]="m1()" [m2]="m2()" [gravity]="g" />
+      <app-playback-controls />
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <span class="metric-label">Aceleração a</span>
+        <span class="metric-value">{{ fmt(result()?.acceleration, 3) }} <small>m/s²</small></span>
+        <span class="metric-sub">{{ direction() }}</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Tração no fio T = m₂(g − a)</span>
+        <span class="metric-value">{{ fmt(result()?.tension) }} <small>N</small></span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Normal N = m₁g cos θ</span>
+        <span class="metric-value">{{ fmt(result()?.normalForce) }} <small>N</small></span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">F motriz = m₂g − m₁g sen θ</span>
+        <span class="metric-value">{{ fmt(result()?.drivingForce) }} <small>N</small></span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Atrito atuante</span>
+        <span class="metric-value">{{ fmt(result()?.frictionForce) }} <small>N</small></span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">μ crítico teórico |F|/N</span>
+        <span class="metric-value">{{ fmt(criticalMu(), 3) }}</span>
+      </div>
+      <div class="metric live">
+        <span class="metric-label">Agora (t = {{ fmt(live()?.t) }} s)</span>
+        <span class="metric-value">x = {{ fmt(live()?.x) }} <small>m</small></span>
+        <span class="metric-sub">v = {{ fmt(live()?.v) }} m/s</span>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="card">
+        <h3>Posição x(t) = ½ a t²</h3>
+        <app-line-chart title="Posição em função do tempo" [series]="positionSeries()" yLabel="x (m)" />
+      </div>
+      <div class="card">
+        <h3>Velocidade v(t) = a t</h3>
+        <app-line-chart title="Velocidade em função do tempo" [series]="velocitySeries()" yLabel="v (m/s)" />
+      </div>
+    </div>
+  </div>
+</section>

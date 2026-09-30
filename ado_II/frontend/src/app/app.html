@@ -1,0 +1,79 @@
+<header class="masthead">
+  <div class="brand">
+    <svg class="cradle" viewBox="0 0 120 84" aria-hidden="true">
+      <line x1="6" y1="6" x2="114" y2="6" class="frame" />
+      <line x1="6" y1="6" x2="6" y2="80" class="frame" />
+      <line x1="114" y1="6" x2="114" y2="80" class="frame" />
+      <g class="swing swing-left">
+        <line x1="36" y1="6" x2="36" y2="58" />
+        <circle cx="36" cy="64" r="6" />
+      </g>
+      <g><line x1="48" y1="6" x2="48" y2="58" /><circle cx="48" cy="64" r="6" /></g>
+      <g><line x1="60" y1="6" x2="60" y2="58" /><circle cx="60" cy="64" r="6" /></g>
+      <g><line x1="72" y1="6" x2="72" y2="58" /><circle cx="72" cy="64" r="6" /></g>
+      <g class="swing swing-right">
+        <line x1="84" y1="6" x2="84" y2="58" />
+        <circle cx="84" cy="64" r="6" />
+      </g>
+    </svg>
+    <div>
+      <p class="kicker">ADO II · Mecânica e Física Moderna</p>
+      <h1>Leis de Newton</h1>
+      <p class="motto">
+        <span class="lex">Lex II.</span>
+        <em>Mutationem motus proportionalem esse vi motrici impressæ.</em>
+        <span class="formula">ΣF = m·a</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="masthead-controls">
+    <label class="system-picker">
+      <span>Experimento</span>
+      <select (change)="onSelect($event)">
+        @for (s of systems; track s.id) {
+          <option [value]="s.id" [selected]="s.id === selected()">{{ s.label }}</option>
+        }
+      </select>
+    </label>
+    <div class="masthead-buttons">
+    <button
+      type="button"
+      class="theme-toggle"
+      [attr.aria-label]="theme.dark() ? 'Mudar para o tema claro' : 'Mudar para o tema escuro'"
+      (click)="sound.click(); theme.toggle()"
+    >
+      {{ theme.dark() ? '☀ claro' : '☾ escuro' }}
+    </button>
+    <button
+      type="button"
+      class="sound-toggle"
+      [attr.aria-pressed]="sound.enabled()"
+      [attr.aria-label]="sound.enabled() ? 'Desligar sons' : 'Ligar sons'"
+      (click)="sound.toggle()"
+    >
+      {{ sound.enabled() ? '♪ som ligado' : '♪ som desligado' }}
+    </button>
+    </div>
+  </div>
+</header>
+
+<p class="summary"><span class="summary-num">{{ current().num }}</span> {{ current().summary }}</p>
+
+<main>
+  @switch (selected()) {
+    @case ('inclined-plane') {
+      <app-inclined-plane />
+    }
+    @case ('centripetal') {
+      <app-centripetal />
+    }
+    @case ('drag') {
+      <app-drag />
+    }
+  }
+</main>
+
+<footer class="colophon">
+  Isaac Newton, <em>Philosophiæ Naturalis Principia Mathematica</em>, 1687 — simulado com fórmulas fechadas, sem integração numérica.
+</footer>
