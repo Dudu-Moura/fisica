@@ -12,6 +12,8 @@ avaliadas sobre um vetor de tempo (equivalente ao `np.linspace`).
 
 ## Como rodar
 
+### Usar Deploy Vercel:
+Site ADO 2 - https://fisicaado2.vercel.app/
 ### Opção recomendada: Docker
 
 ```bash
@@ -43,52 +45,6 @@ Isso sobe:
 | `npm run build` | Build de produção de tudo |
 | `npm test` | Testes das fórmulas (backend, Vitest) |
 | `npm start` | Sobe o backend compilado |
-
-## Deploy na Vercel (grátis, recomendado)
-
-Na Vercel o Angular é servido como site estático e cada rota da API vira uma função
-serverless (pasta `api/`), que usa as mesmas classes de `backend/src/physics/`.
-Não "dorme": abre rápido a qualquer hora.
-
-1. Suba o repositório para o GitHub.
-2. Em [vercel.com](https://vercel.com) → **Add New… → Project** → importe o repositório.
-3. Em **Root Directory**, escolha `ado_II`. O resto (build, saída, funções, headers de
-   segurança) já está em `vercel.json` — não precisa mudar nada nem criar variáveis de ambiente.
-4. **Deploy**. Cada `git push` gera um deploy novo automaticamente.
-
-Proteção contra abuso: a Vercel já tem mitigação de DDoS automática. Para limitar
-requisições por IP, crie uma regra de *Rate Limiting* em **Firewall** no painel do projeto
-(ex.: `/api/*`, 1200 requisições por minuto por IP).
-
-## Deploy com Docker e segurança
-
-A imagem Docker já sai pronta para produção: roda como usuário sem privilégios (`node`),
-só com as dependências de produção, e tem `HEALTHCHECK` em `/api/health`.
-
-O backend aplica:
-
-- **Cabeçalhos de segurança** (`helmet`): Content-Security-Policy restrita (scripts só do próprio site),
-  `X-Content-Type-Options`, proteção contra iframe (`frame-ancestors 'none'`), `Referrer-Policy` etc.
-- **Rate limit** por IP em `/api` (padrão 1200 requisições/min, folgado para arrastar sliders).
-- **Validação estrita** (zod): campos desconhecidos são rejeitados e todos os números têm limites.
-- **Corpo JSON de no máximo 4 KB**, erros sem detalhes internos, timeouts de conexão.
-- **CORS desligado em produção** (frontend e API na mesma origem).
-
-Variáveis de ambiente (todas opcionais):
-
-| Variável | Para quê |
-|----------|----------|
-| `PORT` | Porta do servidor (padrão 3001; muitas plataformas definem sozinhas) |
-| `HTTPS=true` | Se o site é servido por HTTPS: ativa HSTS e `upgrade-insecure-requests` |
-| `TRUST_PROXY=1` | Número de proxies reversos na frente (Render, Railway, Nginx…), para o rate limit ver o IP real |
-| `RATE_LIMIT_PER_MINUTE` | Ajusta o limite de requisições por IP |
-| `CORS_ORIGINS` | Origens extras liberadas, separadas por vírgula (só se o frontend ficar em outro domínio) |
-
-Exemplo atrás de um proxy com HTTPS:
-
-```bash
-docker run -p 3001:3001 -e HTTPS=true -e TRUST_PROXY=1 ado-ii
-```
 
 ## Estrutura
 
