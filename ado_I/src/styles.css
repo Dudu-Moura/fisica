@@ -1,0 +1,129 @@
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  color: #222;
+  background: #fff;
+}
+
+header {
+  padding: 16px 24px 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #666;
+}
+
+main {
+  display: flex;
+  gap: 20px;
+  padding: 20px 24px;
+  align-items: flex-start;
+}
+
+.lateral {
+  width: 300px;
+  flex-shrink: 0;
+}
+
+.area-grafico {
+  flex: 1;
+  min-width: 0;
+}
+
+fieldset {
+  border: 1px solid #ccc;
+  margin: 0 0 14px;
+  padding: 10px 14px 14px;
+}
+
+legend {
+  font-weight: bold;
+  padding: 0 4px;
+}
+
+.campo {
+  margin-top: 10px;
+}
+
+.campo label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.linha {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.linha input[type="range"] {
+  flex: 1;
+}
+
+.linha input[type="number"] {
+  width: 64px;
+}
+
+select {
+  width: 100%;
+  padding: 3px;
+}
+
+.resultados {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.resultados td {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.resultados td:last-child {
+  text-align: right;
+  font-weight: bold;
+}
+
+button {
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.grafico {
+  display: block;
+  width: 100%;
+  height: 520px;
+  border: 1px solid #ccc;
+}
+
+.posicao {
+  margin: 6px 0 0;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.erro {
+  color: #c00;
+}
+
+@media (max-width: 800px) {
+  main {
+    flex-direction: column;
+  }
+  .lateral {
+    width: 100%;
+  }
+  .grafico {
+    height: 360px;
+  }
+}
