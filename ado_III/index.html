@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ADO-3 - Colisões elásticas</title>
+  <style>
+    body { margin: 0; padding: 16px; background: #fff; color: #222; font-family: sans-serif; }
+    #carregando { color: #666; }
+  </style>
+</head>
+<body>
+  <p id="carregando">Carregando Python e matplotlib...</p>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js"></script>
+  <script>
+    (async () => {
+      const aviso = document.getElementById("carregando");
+      try {
+        const pyodide = await loadPyodide();
+        await pyodide.loadPackage("matplotlib");
+        pyodide.runPython(`
+import os
+os.environ["MPLBACKEND"] = "module://matplotlib_pyodide.wasm_backend"
+from matplotlib_pyodide.browser_backend import TimerWasm
+TimerWasm._timer = None
+`);
+        const codigo = await (await fetch("ADO3_Eduardo_Moura.py")).text();
+        await pyodide.runPythonAsync(codigo);
+        pyodide.runPython(`
+from matplotlib.backend_bases import MouseEvent
+from pyodide.ffi import create_proxy
+
+def _mouse(nome):
+    def tratar(e):
+        x, y, botao = fig.canvas._convert_mouse_event(e)
+        if nome == "motion_notify_event":
+            botao = None
+        MouseEvent(nome, fig.canvas, x, y, botao, guiEvent=e)._process()
+    return create_proxy(tratar)
+
+_camada = fig.canvas.get_element("rubberband")
+for js, nome in (("mousedown", "button_press_event"), ("mouseup", "button_release_event"), ("mousemove", "motion_notify_event")):
+    _camada.addEventListener(js, _mouse(nome))
+`);
+        aviso.remove();
+      } catch (e) {
+        aviso.textContent = e.message;
+        aviso.style.whiteSpace = "pre-wrap";
+      }
+    })();
+  </script>
+</body>
+</html>
